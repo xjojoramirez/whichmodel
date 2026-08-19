@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nakout — Pick the model that wins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text: #1a1d29;
+    --muted: #6b7280;
+    --accent: #4f46e5;
+    --accent-soft: #eef2ff;
+    --green: #059669;
+    --green-soft: #ecfdf5;
+    --amber: #d97706;
+    --amber-soft: #fffbeb;
+    --rose: #e11d48;
+    --rose-soft: #fff1f2;
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, .05);
+    --shadow-md: 0 8px 24px rgba(16, 24, 40, .07);
+    --radius: 14px;
+    --font: "Inter", "Segoe UI", system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background:
+      radial-gradient(800px 400px at 85% -100px, rgba(79, 70, 229, .08), transparent 60%),
+      radial-gradient(700px 350px at 10% -80px, rgba(5, 150, 105, .06), transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+    line-height: 1.55;
+    padding-bottom: 4rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    text-align: center;
+    padding: 3.5rem 0 2rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: .35rem .8rem;
+    border-radius: 999px;
+    margin-bottom: 1.1rem;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: var(--text);
+  }
+
+  .tagline {
+    margin-top: .8rem;
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 58ch;
+    margin-inline: auto;
+  }
+
+  .tagline strong { color: var(--text); }
+
+  /* ---------- Selector panel ---------- */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.6rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .panel h2 {
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.1rem;
+    text-align: center;
+  }
+
+  /* provider chips */
+  .provider-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+    margin-bottom: 1.3rem;
+  }
+
+  .provider-chip {
+    font-family: inherit;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .5rem 1rem;
+    cursor: pointer;
+    transition: all .12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .provider-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .provider-chip.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, .35);
+  }
+
+  /* plan cards */
+  .plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: .9rem;
+  }
+
+  .plan-card {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    text-align: left;
+    font-family: inherit;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.05rem;
+    cursor: pointer;
+    transition: all .12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-card:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+  .plan-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, .15);
+  }
+
+  .plan-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .plan-card.selected .plan-name { color: var(--accent); }
+
+  .plan-price {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  .plan-note {
+    font-size: .8rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .status-line {
+    margin-top: 1.1rem;
+    text-align: center;
+    font-size: .88rem;
+    font-weight: 500;
+    color: var(--muted);
+    min-height: 1.3em;
+  }
+  .status-line .picked { color: var(--accent); font-weight: 600; }
+
+  /* ---------- Recommendation tiers ---------- */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.4rem;
+    margin-top: 2rem;
+  }
+
+  .tier {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tier[data-tier="free"]    { --tier: var(--green);   --tier-soft: var(--green-soft); }
+  .tier[data-tier="everyday"]{ --tier: var(--amber);   --tier-soft: var(--amber-soft); }
+  .tier[data-tier="heavy"]   { --tier: var(--rose);    --tier-soft: var(--rose-soft); }
+
+  .tier-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding-bottom: .8rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tier-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--tier);
+  }
+
+  .tier-cost {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--tier);
+    background: var(--tier-soft);
+    border-radius: 999px;
+    padding: .25rem .7rem;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .tier-desc { font-size: .86rem; color: var(--muted); }
+
+  /* mode filter chips */
+  .mode-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+    margin: 2rem 0 -1rem;
+  }
+
+  .mode-chip {
+    font-family: inherit;
+    font-size: .84rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .45rem 1rem;
+    cursor: pointer;
+    transition: all .12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mode-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .mode-chip.active {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, .35);
+  }
+
+  .mode-badge {
+    display: inline-block;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: .15rem .55rem;
+    vertical-align: middle;
+  }
+  .mode-badge.plan     { color: var(--accent); background: var(--accent-soft); }
+  .mode-badge.execute  { color: var(--green);  background: var(--green-soft); }
+  .mode-badge.review   { color: var(--amber);  background: var(--amber-soft); }
+  .mode-badge.research { color: var(--rose);   background: var(--rose-soft); }
+
+  .best-badge {
+    display: inline-block;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    border-radius: 999px;
+    padding: .1rem .55rem;
+    margin-left: .5rem;
+    vertical-align: middle;
+  }
+
+  .deal-badge {
+    display: inline-block;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1.5px solid var(--green);
+    border-radius: 999px;
+    padding: .1rem .55rem;
+    margin-left: .5rem;
+    vertical-align: middle;
+  }
+
+  .model-modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: .5rem;
+  }
+
+  .model-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+  }
+
+  .model-list li {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .8rem .85rem;
+    transition: border-color .12s ease;
+  }
+  .model-list li:hover { border-color: var(--tier); }
+
+  .model-name {
+    font-weight: 700;
+    font-size: .92rem;
+    color: var(--text);
+  }
+
+  .model-why { font-size: .82rem; color: var(--muted); line-height: 1.45; margin-top: .2rem; }
+
+  .model-prompt {
+    margin-top: .55rem;
+    font-size: .82rem;
+    font-style: italic;
+    color: var(--text);
+    background: var(--surface);
+    border-left: 3px solid var(--tier);
+    padding: .45rem .6rem;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .model-actions { margin-top: .6rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+
+  button {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active { transform: translateY(1px) scale(.99); }
+  button:focus-visible { outline: 3px solid rgba(79, 70, 229, .4); outline-offset: 2px; }
+
+  .btn-copy {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid transparent;
+    padding: .45rem .9rem;
+    font-size: .82rem;
+  }
+  .btn-copy:hover { border-color: var(--accent); }
+  .btn-copy.ok {
+    color: var(--green);
+    background: var(--green-soft);
+    border-color: transparent;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: .84rem;
+  }
+  footer code {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: .15rem .4rem;
+    border-radius: 6px;
+    font-size: .8rem;
+  }
+  .footer-icon {
+    width: 18px;
+    height: 18px;
+    vertical-align: -3px;
+    margin-right: .3rem;
+    color: var(--amber);
+    stroke-width: 2.5;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .tier-grid { grid-template-columns: 1fr; }
+    .panel { padding: 1.1rem; }
+  }
+  @media (max-width: 480px) {
+    .provider-chip { font-size: .82rem; padding: .45rem .8rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="kicker">Knockout model picks</div>
+      <h1>Nakout</h1>
+      <p class="tagline">Pick the model that wins. Tell us which AI plan you're on, and we'll match you with the best models for <strong>free/cheap</strong>, <strong>everyday</strong>, and <strong>heavy</strong> work, plus a test prompt for each.</p>
+    </header>
+
+    <!-- ============ PLAN SELECTOR ============ -->
+    <section class="panel" aria-label="Plan selector">
+      <h2>Which plan are you on?</h2>
+      <div class="provider-row" id="providerRow" role="tablist" aria-label="Provider"></div>
+      <div class="plan-grid" id="planGrid" role="tabpanel"></div>
+      <div class="status-line" id="statusLine"></div>
+    </section>
+
+    <!-- ============ MODE FILTER ============ -->
+    <div class="mode-row" id="modeRow" role="tablist" aria-label="Execution mode">
+      <button type="button" class="mode-chip active" data-mode="all">All modes</button>
+      <button type="button" class="mode-chip" data-mode="plan">Plan</button>
+      <button type="button" class="mode-chip" data-mode="execute">Execute</button>
+      <button type="button" class="mode-chip" data-mode="review">Review</button>
+      <button type="button" class="mode-chip" data-mode="research">Research</button>
+    </div>
+
+    <!-- ============ RECOMMENDATIONS ============ -->
+    <main class="tier-grid" id="library" aria-label="Recommended models by tier"></main>
+
+    <footer>
+      <svg class="footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Model ids &amp; plan gates across providers from official catalogs · Recommendations are friendly picks, not guarantees · Personal reference, may be outdated
+    </footer>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Providers ---------- */
+  var PROVIDERS = [
+    {
+      id: "cc",
+      name: "Command Code",
+      plans: [
+        { id: "cc-go", name: "Go", price: "Budget", note: "Cheapest paid tier. Great value: most open + Grok 4.5, GPT-5.6 Luna, Qwen Flash." },
+        { id: "cc-goat", name: "GOAT", price: "Mid", note: "Unlocks GPT-5.6 Sol and Grok 4.6 — frontier-adjacent at a mid price." },
+        { id: "cc-pro", name: "Pro", price: "$$", note: "Serves Sonnet 5, Gemini Flash family, GPT-5.5, Codex — the everyday sweet spot." },
+        { id: "cc-max", name: "Max", price: "$$$$", note: "Everything, including Opus 5 and Fable 5 for the heaviest reasoning." }
+      ]
+    },
+    {
+      id: "openai",
+      name: "OpenAI",
+      plans: [
+        { id: "oai-free", name: "Free", price: "$0", note: "ChatGPT free tier: limited GPT-5.x mini access with rate limits." },
+        { id: "oai-plus", name: "Plus", price: "$20/mo", note: "Higher limits on flagship GPT-5.x + GPT-5.x mini." },
+        { id: "oai-pro", name: "Pro", price: "$200/mo", note: "Max access to GPT-5.x, reasoning effort controls, no rate limits." },
+        { id: "oai-api", name: "API", price: "Pay/token", note: "Gyms the full model list per token — cheapest for scripts, pricier for chat." }
+      ]
+    },
+    {
+      id: "anthropic",
+      name: "Anthropic",
+      plans: [
+        { id: "ant-free", name: "Free", price: "$0", note: "Claude.ai free tier: limited Haiku/Sonnet access, throttled." },
+        { id: "ant-pro", name: "Pro", price: "$20/mo", note: "Sonnet 5 + Haiku 4.5 at full speed; Opus 4.8 included with lower usage limits." },
+        { id: "ant-max", name: "Max", price: "$100–200/mo", note: "Opus 5 and Fable 5 access, 5× usage limits." },
+        { id: "ant-api", name: "API", price: "Pay/token", note: "All models per token; only pay for what you send." }
+      ]
+    },
+    {
+      id: "google",
+      name: "Google",
+      plans: [
+        { id: "ggl-free", name: "Free", price: "$0", note: "Gemini free tier: Flash models with limits." },
+        { id: "ggl-adv", name: "Advanced", price: "$20/mo", note: "Gemini Advanced: best models + bigger context." },
+        { id: "ggl-ultra", name: "Ultra", price: "$250/mo", note: "Gemini Ultra: top reasoning, highest limits." },
+        { id: "ggl-api", name: "API", price: "Pay/token", note: "Gemini API: Flash/Pro per token, deep discounts at scale." }
+      ]
+    },
+    {
+      id: "xai",
+      name: "xAI",
+      plans: [
+        { id: "xai-free", name: "Free", price: "$0", note: "Grok free tier: Grok 4.x with throttles." },
+        { id: "xai-supergrok", name: "SuperGrok", price: "$30/mo", note: "Higher Grok limits + Grok 4.6." },
+        { id: "xai-api", name: "API", price: "Pay/token", note: "Grok 4.6 per token, plus image generation." }
+      ]
+    },
+    {
+      id: "opencode",
+      name: "OpenCode",
+      plans: [
+        { id: "oc-zen", name: "Zen", price: "Pay/use", note: "Curated, tested models — best picks from the OpenCode team, pay per use." },
+        { id: "oc-go", name: "Go", price: "Sub", note: "Low-cost subscription for popular open coding models, verified by OpenCode." },
+        { id: "oc-byo", name: "BYO API key", price: "Free", note: "Open source — bring your own key from any of 75+ providers." }
+      ]
+    },
+    {
+      id: "local",
+      name: "Local / Self-host",
+      plans: [
+        { id: "loc-ollama", name: "Ollama", price: "Free", note: "Local models on your own hardware; cost = electricity." },
+        { id: "loc-vllm", name: "vLLM", price: "Free", note: "Self-host any open-weight model with production serving." }
+      ]
+    }
+  ];
+
+  var providerById = {};
+  PROVIDERS.forEach(function (p) { providerById[p.id] = p; });
+
+  var ALL_PROMPTS = {
+    free: [
+      "Write a Python function that reverses a string without using slicing.",
+      "Explain what a SQL JOIN is in one short paragraph.",
+      "Convert this list of dicts to JSON in Python: [{\"name\": \"ada\", \"age\": 36}]",
+      "Fix this bug: JavaScript `for (i = 0; i <= arr.length; i++)` throws at the end.",
+      "Summarize the output of `git status --short` in plain English."
+    ],
+    everyday: [
+      "Write a TypeScript function that debounces an async function, with proper types and cleanup for React.",
+      "Refactor this Promise chain into async/await with error handling: fetchUser().then(fetchPosts).then(render).catch(showError).",
+      "Write a SQL query that finds the top 3 customers by lifetime value, excluding refunded orders, using a window function.",
+      "Create a Python script that watches a directory and re-runs a test command whenever a file changes.",
+      "Design a small REST endpoint that paginates a large collection with a stable cursor, and explain the trade-offs vs offset pagination."
+    ],
+    heavy: [
+      "Design a distributed rate limiter that works across multiple instances without a central coordinator. Compare token bucket vs sliding window, and sketch the consistency requirements.",
+      "Prove whether this locking scheme is deadlock-free, then show a counterexample if not: thread A takes L1 then L2; thread B takes L2 then L3; thread C takes L3 then L1.",
+      "Write a query planner for a toy SQL database: given a schema and a join query, enumerate join orders and pick the cheapest plan, explaining your cost model.",
+      "Analyze the CAP trade-offs of a multiplayer game state sync: CRDTs, a central authority, or lockstep? Walk through failure modes for each.",
+      "Given a monorepo with 40 packages and a broken nightly build, design a bisection strategy that isolates the breaking change in under 10 builds."
+    ]
+  };
+
+  function promptForTier(tierId) {
+    var arr = ALL_PROMPTS[tierId];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  /* ---------- Recommendations ----------
+     Each entry: { model: "...", modes: ["plan"|"execute"|"review"|"research"...], best?: true }
+     modes = which execution types the model is genuinely good at;
+     best = mark the single strongest pick on that tier for this plan. */
+  var RECS = {
+    "cc-go": {
+      free:  [
+        { model: "poolside/laguna-s-2.1-free", modes: ["execute", "review"], deal: "Free", best: true },
+        { model: "xiaomi/mimo-v2.5-pro", modes: ["execute", "review"], deal: "5× credits" },
+        { model: "MiniMaxAI/MiniMax-M3", modes: ["execute", "review"], deal: "2× credits" }
+      ],
+      everyday: [
+        { model: "xiaomi/mimo-v2.5-pro", modes: ["execute", "review", "plan"], deal: "5× credits", best: true },
+        { model: "deepseek/deepseek-v4-flash", modes: ["execute", "review", "research"], deal: "2× credits" },
+        { model: "MiniMaxAI/MiniMax-M3", modes: ["execute", "plan", "research"], deal: "2× credits" }
+      ],
+      heavy: [
+        { model: "MiniMaxAI/MiniMax-M3", modes: ["plan", "research", "execute"], deal: "2× credits", best: true },
+        { model: "zai-org/GLM-5.3", modes: ["plan", "research", "execute"] },
+        { model: "deepseek/deepseek-v4-flash", modes: ["execute", "review", "research"] }
+      ]
+    },
+    "cc-goat": {
+      free:  [
+        { model: "gpt-5.6-luna", modes: ["execute", "review"] },
+        { model: "deepseek/deepseek-v4-flash", modes: ["review", "execute"] },
+        { model: "Qwen/Qwen3.7-Flash", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "gpt-5.6-sol", modes: ["plan", "execute", "review", "research"], best: true },
+        { model: "xai/grok-4.6", modes: ["execute", "review"] },
+        { model: "google/gemini-3.7-flash", modes: ["execute", "review", "research"] }
+      ],
+      heavy: [
+        { model: "gpt-5.6-sol", modes: ["execute", "review", "plan"], best: true },
+        { model: "zai-org/GLM-5.3", modes: ["plan", "research"] },
+        { model: "moonshotai/Kimi-K3", modes: ["research", "plan"] }
+      ]
+    },
+    "cc-pro": {
+      free:  [
+        { model: "claude-haiku-4-5-20251001", modes: ["execute", "review"] },
+        { model: "google/gemini-3.1-flash-lite", modes: ["review", "execute"] },
+        { model: "gpt-5.6-luna", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "claude-sonnet-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "gpt-5.6-terra", modes: ["plan", "execute", "review"] },
+        { model: "google/gemini-3.7-flash", modes: ["research", "execute", "review"] }
+      ],
+      heavy: [
+        { model: "claude-sonnet-5", modes: ["plan", "execute", "review", "research"], best: true },
+        { model: "gpt-5.5", modes: ["execute", "plan", "research"] },
+        { model: "Qwen/Qwen3.8-Max", modes: ["research", "plan", "execute"] }
+      ]
+    },
+    "cc-max": {
+      free:  [
+        { model: "claude-haiku-4-5-20251001", modes: ["execute", "review"] },
+        { model: "google/gemini-3.1-flash-lite", modes: ["review", "execute"] },
+        { model: "gpt-5.4-mini", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "claude-sonnet-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "gpt-5.6-sol", modes: ["plan", "execute", "research"] },
+        { model: "xai/grok-4.6", modes: ["execute", "review", "research"] }
+      ],
+      heavy: [
+        { model: "claude-fable-5", modes: ["plan", "execute", "research", "review"], best: true },
+        { model: "claude-opus-5", modes: ["execute", "plan", "review"] },
+        { model: "sakana/fugu-ultra", modes: ["research", "plan"] }
+      ]
+    },
+
+    "oai-free": {
+      free:  [
+        { model: "GPT-5.x mini (ChatGPT free)", modes: ["execute", "review"] },
+        { model: "o1-mini (if available)", modes: ["plan", "research"] },
+        { model: "GPT-4o mini (if available)", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "GPT-5.x mini (ChatGPT free)", modes: ["execute", "review"], best: true },
+        { model: "GPT-4.1 mini (if available)", modes: ["review", "execute"] },
+        { model: "GPT-4o (legacy, limited)", modes: ["execute", "research"] }
+      ],
+      heavy: ["—"]
+    },
+    "oai-plus": {
+      free:  [
+        { model: "GPT-5.x mini", modes: ["execute", "review"] },
+        { model: "GPT-4o mini", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "GPT-5.3 Codex", modes: ["execute", "review"], best: true },
+        { model: "GPT-5.4", modes: ["plan", "execute", "research"] }
+      ],
+      heavy: [
+        { model: "GPT-5.4 (high reasoning effort)", modes: ["plan", "research", "execute"], best: true },
+        { model: "GPT-5.3 Codex (agentic coding)", modes: ["execute", "review"] }
+      ]
+    },
+    "oai-pro": {
+      free:  [
+        { model: "GPT-5.x mini", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "GPT-5.3 Codex", modes: ["execute", "review"], best: true },
+        { model: "GPT-5.4", modes: ["plan", "execute", "review"] },
+        { model: "GPT-5.5", modes: ["research", "plan"] }
+      ],
+      heavy: [
+        { model: "GPT-5.5 (max reasoning)", modes: ["plan", "research", "execute", "review"], best: true },
+        { model: "GPT-5.3 Codex (deep agent mode)", modes: ["execute", "review"] }
+      ]
+    },
+    "oai-api": {
+      free:  [
+        { model: "gpt-5.4-mini", modes: ["execute", "review"] },
+        { model: "gpt-5.6-luna", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "gpt-5.6-terra", modes: ["plan", "execute", "review"], best: true },
+        { model: "gpt-5.3-codex", modes: ["execute", "review"] }
+      ],
+      heavy: [
+        { model: "gpt-5.6-sol", modes: ["execute", "review", "plan"], best: true },
+        { model: "gpt-5.5", modes: ["plan", "research", "execute"] }
+      ]
+    },
+
+    "ant-free": {
+      free:  [
+        { model: "Claude Haiku 4.5 (limited)", modes: ["execute", "review"] },
+        { model: "Claude Sonnet 4 (limited)", modes: ["plan", "execute"] }
+      ],
+      everyday: [
+        { model: "Claude Sonnet 4 (throttled)", modes: ["execute", "review"], best: true }
+      ],
+      heavy: ["—"]
+    },
+    "ant-pro": {
+      free:  [
+        { model: "Claude Haiku 4.5", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "claude-sonnet-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "claude-opus-4-8", modes: ["plan", "execute", "research"] }
+      ],
+      heavy: [
+        { model: "claude-opus-4-8", modes: ["plan", "execute", "review", "research"], best: true },
+        { model: "claude-sonnet-5 (high reasoning effort)", modes: ["plan", "execute", "review"] }
+      ]
+    },
+    "ant-max": {
+      free:  [
+        { model: "Claude Haiku 4.5", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "claude-sonnet-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "claude-opus-4-8", modes: ["plan", "execute", "research"] }
+      ],
+      heavy: [
+        { model: "claude-opus-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "claude-fable-5", modes: ["plan", "research", "execute"] }
+      ]
+    },
+    "ant-api": {
+      free:  [
+        { model: "claude-haiku-4-5-20251001", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "claude-sonnet-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "claude-sonnet-4-6", modes: ["plan", "execute", "review"] }
+      ],
+      heavy: [
+        { model: "claude-opus-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "claude-fable-5", modes: ["plan", "research", "execute"] }
+      ]
+    },
+
+    "ggl-free": {
+      free:  [
+        { model: "Gemini 2.5 Flash (limited)", modes: ["execute", "review"] },
+        { model: "Gemini 2.0 Flash (if available)", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "Gemini 2.5 Flash", modes: ["execute", "review"], best: true }
+      ],
+      heavy: ["—"]
+    },
+    "ggl-adv": {
+      free:  [
+        { model: "Gemini 2.5 Flash", modes: ["execute", "review"] },
+        { model: "Gemini 3 Flash Lite", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "Gemini 3 Flash", modes: ["execute", "review"], best: true },
+        { model: "Gemini 2.5 Pro", modes: ["plan", "execute", "research"] }
+      ],
+      heavy: [
+        { model: "Gemini 2.5 Pro (high temp, deep reasoning)", modes: ["plan", "research", "execute"], best: true }
+      ]
+    },
+    "ggl-ultra": {
+      free:  [
+        { model: "Gemini 3 Flash Lite", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "Gemini 3 Flash", modes: ["execute", "review"], best: true },
+        { model: "Gemini 3 Pro", modes: ["plan", "execute", "research"] }
+      ],
+      heavy: [
+        { model: "Gemini 3 Pro (max reasoning)", modes: ["plan", "research", "execute", "review"], best: true }
+      ]
+    },
+    "ggl-api": {
+      free:  [
+        { model: "google/gemini-3.1-flash-lite", modes: ["execute", "review"] },
+        { model: "google/gemini-3.5-flash-lite", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "google/gemini-3.7-flash", modes: ["execute", "review", "research"], best: true },
+        { model: "google/gemini-3.6-flash", modes: ["plan", "execute", "review"] }
+      ],
+      heavy: [
+        { model: "google/gemini-3.5-flash", modes: ["plan", "research", "execute"], best: true },
+        { model: "google/gemini-3.7-flash (high effort)", modes: ["execute", "review", "plan"] }
+      ]
+    },
+
+    "xai-free": {
+      free:  [
+        { model: "Grok 4 (free tier, throttled)", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "Grok 4", modes: ["execute", "review", "plan"], best: true }
+      ],
+      heavy: ["—"]
+    },
+    "xai-supergrok": {
+      free:  [
+        { model: "Grok 4 (fast)", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "Grok 4.6", modes: ["execute", "review", "plan"], best: true }
+      ],
+      heavy: [
+        { model: "Grok 4.6 (deep reasoning)", modes: ["plan", "research", "execute", "review"], best: true }
+      ]
+    },
+    "xai-api": {
+      free:  [
+        { model: "xai/grok-4.5", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "xai/grok-4.6", modes: ["execute", "review", "plan"], best: true },
+        { model: "xai/grok-4.5", modes: ["plan", "execute", "review"] }
+      ],
+      heavy: [
+        { model: "xai/grok-4.6 (high effort)", modes: ["plan", "research", "execute", "review"], best: true }
+      ]
+    },
+
+    "loc-ollama": {
+      free:  [
+        { model: "llama3.3 (8B quantized)", modes: ["execute", "review"] },
+        { model: "qwen3:8b", modes: ["review", "execute"] },
+        { model: "gemma3:4b", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "qwen3:14b", modes: ["execute", "review"], best: true },
+        { model: "mistral-nemo:12b", modes: ["plan", "execute"] }
+      ],
+      heavy: [
+        { model: "llama3.3:70b (if you have the VRAM)", modes: ["plan", "execute", "review"], best: true }
+      ]
+    },
+    "loc-vllm": {
+      free:  [
+        { model: "Qwen3.7-Flash (self-hosted)", modes: ["execute", "review"] },
+        { model: "DeepSeek V4 Flash (self-hosted)", modes: ["review", "execute"] }
+      ],
+      everyday: [
+        { model: "Qwen3.7-Plus (self-hosted)", modes: ["execute", "review", "plan"], best: true },
+        { model: "MiMo V2.5 (self-hosted)", modes: ["plan", "execute", "review"] }
+      ],
+      heavy: [
+        { model: "GLM-5.3 (self-hosted, if VRAM allows)", modes: ["plan", "research", "execute"], best: true }
+      ]
+    },
+
+    "oc-zen": {
+      free:  [
+        { model: "anthropic/claude-haiku-4-5", modes: ["execute", "review"], best: true },
+        { model: "google/gemini-3.5-flash", modes: ["review", "execute"] },
+        { model: "openai/gpt-5.4-mini", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "anthropic/claude-sonnet-4-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "google/gemini-3.7-flash", modes: ["execute", "review", "research"] },
+        { model: "Qwen/Qwen3-Coder-480B", modes: ["execute", "review", "plan"] }
+      ],
+      heavy: [
+        { model: "anthropic/claude-sonnet-4-5 (high effort)", modes: ["plan", "execute", "review", "research"], best: true },
+        { model: "Qwen/Qwen3-Coder-480B", modes: ["plan", "execute", "research"] },
+        { model: "google/gemini-3.5-flash", modes: ["plan", "research", "execute"] }
+      ]
+    },
+    "oc-go": {
+      free:  [
+        { model: "Qwen/Qwen3-Coder-480B (cache hit)", modes: ["execute", "review"], best: true },
+        { model: "deepseek/deepseek-v4-flash", modes: ["review", "execute"] },
+        { model: "zai-org/GLM-4.6", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "Qwen/Qwen3-Coder-480B", modes: ["execute", "review", "plan"], best: true },
+        { model: "deepseek/deepseek-v4-pro", modes: ["execute", "research", "plan"] },
+        { model: "moonshotai/Kimi-K2", modes: ["execute", "review", "plan"] }
+      ],
+      heavy: [
+        { model: "Qwen/Qwen3-Coder-480B (max effort)", modes: ["plan", "execute", "review"], best: true },
+        { model: "zai-org/GLM-5.3", modes: ["plan", "research", "execute"] },
+        { model: "moonshotai/Kimi-K3", modes: ["research", "plan"] }
+      ]
+    },
+    "oc-byo": {
+      free:  [
+        { model: "ollama/qwen3:8b (local)", modes: ["execute", "review"], best: true },
+        { model: "groq/llama-3.3-70b", modes: ["review", "execute"] },
+        { model: "openrouter/deepseek/deepseek-v4-flash", modes: ["execute", "review"] }
+      ],
+      everyday: [
+        { model: "anthropic/claude-sonnet-5", modes: ["execute", "review", "plan"], best: true },
+        { model: "openrouter/anthropic/claude-sonnet-4-5", modes: ["execute", "review", "plan"] },
+        { model: "github-copilot/gpt-5.4", modes: ["plan", "execute", "research"] }
+      ],
+      heavy: [
+        { model: "anthropic/claude-opus-5", modes: ["plan", "execute", "review", "research"], best: true },
+        { model: "github-copilot/claude-opus-4-8", modes: ["plan", "execute", "research"] },
+        { model: "bedrock/anthropic.claude-sonnet-4-5", modes: ["plan", "research", "execute"] }
+      ]
+    }
+  };
+
+  var REASONS = {
+    "gpt-5.6-luna": "Cheapest OpenAI model — token-cheap sanity checks.",
+    "gpt-5.4-mini": "Fast and cost-effective for everyday tasks.",
+    "gpt-5.4": "Frontier general work at a sane price.",
+    "gpt-5.5": "Latest frontier model for complex work.",
+    "gpt-5.3-codex": "Purpose-built for coding.",
+    "gpt-5.6-terra": "Balances intelligence and cost.",
+    "gpt-5.6-sol": "Frontier model for complex professional work.",
+    "claude-haiku-4-5-20251001": "Fastest, most compact Claude — great for quick tasks.",
+    "claude-sonnet-5": "Best combo of speed & intelligence.",
+    "claude-opus-5": "Most intelligent Opus for agents and coding.",
+    "claude-fable-5": "Most capable for demanding reasoning & long-horizon agents.",
+    "xai/grok-4.5": "Smart model for coding and knowledge work at low cost.",
+    "xai/grok-4.6": "Frontier performance on coding, knowledge work, and STEM.",
+    "deepseek/deepseek-v4-flash": "Fast hybrid-attention reasoning, dirt cheap.",
+    "deepseek/deepseek-v4-pro": "Long-context reasoning at low cost.",
+    "Qwen/Qwen3.7-Flash": "Fast low-cost agentic coding & reasoning.",
+    "Qwen/Qwen3.7-Plus": "Agentic coding & reasoning at lower cost.",
+    "Qwen/Qwen3.8-Max": "Autonomous long-horizon coding & professional work.",
+    "zai-org/GLM-5.3": "Frontier coding with a huge 1M context.",
+    "moonshotai/Kimi-K3": "Long-horizon coding with 1M context.",
+    "google/gemini-3.1-flash-lite": "High-volume workhorse with implicit caching.",
+    "google/gemini-3.5-flash-lite": "Upgraded agentic capabilities, ideal for subagents.",
+    "google/gemini-3.6-flash": "Previous Gemini Flash, still fast & capable.",
+    "google/gemini-3.7-flash": "Higher-quality coding, fewer tokens.",
+    "anthropic/claude-haiku-4-5": "Fastest Claude — great for quick sanity checks.",
+    "anthropic/claude-sonnet-4-5": "Best Claude for agentic coding in OpenCode.",
+    "anthropic/claude-opus-5": "Most intelligent Claude for the heaviest reasoning.",
+    "Qwen/Qwen3-Coder-480B": "Long-context agentic coding, OpenCode's flagship open pick.",
+    "Qwen/Qwen3-Coder-480B (cache hit)": "Same model, near-free on cache hits — perfect Go tier pick.",
+    "Qwen/Qwen3-Coder-480B (max effort)": "Same model pushed to max effort for heavy reasoning.",
+    "zai-org/GLM-4.6": "Solid open coding model at low cost.",
+    "moonshotai/Kimi-K2": "Strong coding & tool use, OpenAI-compatible.",
+    "moonshotai/Kimi-K3": "Long-horizon coding with 1M context.",
+    "ollama/qwen3:8b (local)": "Free local model — no API costs at all.",
+    "groq/llama-3.3-70b": "Fast inference on Llama 70B through Groq.",
+    "openrouter/deepseek/deepseek-v4-flash": "Cheapest path to DeepSeek via OpenRouter routing.",
+    "openrouter/anthropic/claude-sonnet-4-5": "Claude via OpenRouter — useful when Anthropic direct isn't available.",
+    "github-copilot/gpt-5.4": "GPT-5.4 through GitHub Copilot subscription.",
+    "github-copilot/claude-opus-4-8": "Opus 4.8 through GitHub Copilot — no Anthropic sub needed.",
+    "bedrock/anthropic.claude-sonnet-4-5": "Claude via AWS Bedrock — good for enterprise / VPC.",
+    "poolside/laguna-s-2.1-free": "Open-weight agentic coder — and on Go it costs zero credits.",
+    "xiaomi/mimo-v2.5-pro": "High-capability long-context coding — your Go deal stretches credits 5×.",
+    "MiniMaxAI/MiniMax-M3": "Frontier coding & agents with native multimodality — your Go deal doubles the credits.",
+    "google/gemini-3.5-flash": "Pro-level coding proficiency.",
+    "sakana/fugu-ultra": "Multi-agent orchestration across frontier models.",
+    "meta/muse-spark-1.1": "Agentic performance, tool use, and computer use.",
+    "meta/muse-spark-1.2": "Coding-optimized for agentic workflows and large codebases."
+  };
+
+  function reasonFor(model) {
+    if (REASONS[model]) return REASONS[model];
+    if (model === "—") return "This plan caps out below this tier — upgrade or use an API key for heavy work.";
+    return "Good fit for this tier on this plan.";
+  }
+
+  /* ---------- UI ---------- */
+  var providerRow = document.getElementById("providerRow");
+  var planGrid = document.getElementById("planGrid");
+  var statusLine = document.getElementById("statusLine");
+  var library = document.getElementById("library");
+
+  var selectedProviderId = null;
+  var selectedPlanId = null;
+  var selectedMode = "all";
+
+  function pickBest(tierId) {
+    var recs = RECS[selectedPlanId];
+    if (!recs) return [];
+    return recs[tierId] || [];
+  }
+
+  /* mode chips */
+  var modeRow = document.getElementById("modeRow");
+  modeRow.addEventListener("click", function (e) {
+    var chip = e.target.closest(".mode-chip");
+    if (!chip) return;
+    selectedMode = chip.dataset.mode;
+    Array.prototype.forEach.call(modeRow.children, function (c) {
+      c.classList.toggle("active", c === chip);
+    });
+    renderLibrary();
+  });
+
+  function renderProviderChips() {
+    PROVIDERS.forEach(function (p) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "provider-chip";
+      chip.textContent = p.name;
+      chip.dataset.provider = p.id;
+      chip.addEventListener("click", function () { selectProvider(p.id); });
+      providerRow.appendChild(chip);
+    });
+  }
+
+  function selectProvider(id) {
+    selectedProviderId = id;
+    selectedPlanId = null;
+    Array.prototype.forEach.call(providerRow.children, function (c) {
+      c.classList.toggle("active", c.dataset.provider === id);
+    });
+    renderPlans();
+    renderLibrary();
+  }
+
+  function renderPlans() {
+    planGrid.innerHTML = "";
+    if (!selectedProviderId) return;
+    var provider = providerById[selectedProviderId];
+    provider.plans.forEach(function (plan) {
+      var card = document.createElement("button");
+      card.type = "button";
+      card.className = "plan-card";
+      card.dataset.plan = plan.id;
+
+      var name = document.createElement("span");
+      name.className = "plan-name";
+      name.textContent = plan.name;
+
+      var price = document.createElement("span");
+      price.className = "plan-price";
+      price.textContent = plan.price;
+
+      var note = document.createElement("span");
+      note.className = "plan-note";
+      note.textContent = plan.note;
+
+      card.appendChild(name);
+      card.appendChild(price);
+      card.appendChild(note);
+      card.addEventListener("click", function () { selectPlan(plan.id, card); });
+      planGrid.appendChild(card);
+    });
+  }
+
+  function selectPlan(id, card) {
+    selectedPlanId = id;
+    Array.prototype.forEach.call(planGrid.children, function (c) {
+      c.classList.toggle("selected", c === card);
+    });
+    renderLibrary();
+  }
+
+  function renderLibrary() {
+    library.innerHTML = "";
+    if (!selectedPlanId) {
+      statusLine.innerHTML = "Pick a provider, then a plan. Recommendations will appear below.";
+      return;
+    }
+
+    var tierMeta = [
+      { id: "free", name: "Free / Cheap", cost: "Token-cheap", desc: "Quick sanity checks — catch obvious breakage for pennies." },
+      { id: "everyday", name: "Everyday", cost: "Workhorse", desc: "Real coding tasks — refactors, tests, feature wiring." },
+      { id: "heavy", name: "Heavy", cost: "Big guns", desc: "Hard reasoning & architecture — deep multi-step problems." }
+    ];
+
+    var plan = null;
+    PROVIDERS.some(function (p) {
+      return p.plans.some(function (pl) {
+        if (pl.id === selectedPlanId) { plan = pl; return true; }
+        return false;
+      });
+    });
+
+    var provider = null;
+    PROVIDERS.some(function (p) {
+      if (p.id === selectedProviderId) { provider = p; return true; }
+      return false;
+    });
+
+    var total = 0;
+    var shown = 0;
+    tierMeta.forEach(function (tier) {
+      var models = pickBest(tier.id);
+      var tierShown = 0;
+      var sec = document.createElement("section");
+      sec.className = "tier";
+      sec.setAttribute("data-tier", tier.id);
+      var head = document.createElement("div");
+      head.className = "tier-head";
+      var name = document.createElement("span");
+      name.className = "tier-name";
+      name.textContent = tier.name;
+      var cost = document.createElement("span");
+      cost.className = "tier-cost";
+      cost.textContent = tier.cost;
+      head.appendChild(name);
+      head.appendChild(cost);
+
+      var desc = document.createElement("p");
+      desc.className = "tier-desc";
+      desc.textContent = tier.desc;
+
+      var list = document.createElement("ul");
+      list.className = "model-list";
+      models.forEach(function (entry) {
+        total++;
+        var modelName = entry.model || entry;
+        var modes = entry.modes || (entry.mode ? [entry.mode] : []);
+
+        if (selectedMode !== "all" && modes.indexOf(selectedMode) === -1) return;
+
+        shown++;
+        tierShown++;
+        var li = document.createElement("li");
+
+        var nameEl = document.createElement("div");
+        nameEl.className = "model-name";
+        nameEl.textContent = modelName;
+
+        if (entry.best) {
+          var bestBadge = document.createElement("span");
+          bestBadge.className = "best-badge";
+          bestBadge.textContent = "★ Best overall";
+          nameEl.appendChild(bestBadge);
+        }
+
+        if (entry.deal) {
+          var dealBadge = document.createElement("span");
+          dealBadge.className = "deal-badge";
+          dealBadge.textContent = "Deal: " + entry.deal;
+          nameEl.appendChild(dealBadge);
+        }
+
+        var why = document.createElement("div");
+        why.className = "model-why";
+        why.textContent = reasonFor(modelName);
+
+        li.appendChild(nameEl);
+        li.appendChild(why);
+
+        if (modes.length) {
+          var modeWrap = document.createElement("div");
+          modeWrap.className = "model-modes";
+          modes.forEach(function (mode) {
+            var badge = document.createElement("span");
+            badge.className = "mode-badge " + mode;
+            badge.textContent = mode;
+            modeWrap.appendChild(badge);
+          });
+          li.appendChild(modeWrap);
+        }
+
+        var prompt = document.createElement("div");
+        prompt.className = "model-prompt";
+        prompt.textContent = "Test: " + promptForTier(tier.id);
+        li.appendChild(prompt);
+
+        var actions = document.createElement("div");
+        actions.className = "model-actions";
+        var copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "btn-copy btn-run";
+        copyBtn.textContent = "Copy Prompt";
+        copyBtn.addEventListener("click", function (e) {
+          copyText(e.currentTarget.parentElement.querySelector(".model-prompt").textContent, e.currentTarget);
+        });
+        actions.appendChild(copyBtn);
+        li.appendChild(actions);
+
+        list.appendChild(li);
+      });
+
+      if (tierShown === 0 && selectedMode !== "all") {
+        var empty = document.createElement("p");
+        empty.className = "tier-desc";
+        empty.textContent = "No models tagged for \"" + selectedMode + "\" on this tier for this plan — try another mode or \"All modes\".";
+        list.appendChild(empty);
+      }
+
+      sec.appendChild(head);
+      sec.appendChild(desc);
+      sec.appendChild(list);
+      library.appendChild(sec);
+    });
+
+    var summary = "Showing <span class=\"picked\">" + provider.name + " · " + plan.name + "</span> — " + shown + " model picks";
+    if (selectedMode !== "all") summary += " for <span class=\"picked\">" + selectedMode + "</span>";
+    statusLine.innerHTML = summary;
+  }
+
+  /* ---------- Copy ---------- */
+  function copyText(text, btn) {
+    function done() {
+      var original = btn.textContent;
+      btn.textContent = "Copied ✓";
+      btn.classList.add("ok");
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.classList.remove("ok");
+      }, 1400);
+    }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); }
+      catch (e) { btn.textContent = "Error"; }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  /* ---------- Init ---------- */
+  renderProviderChips();
+  renderPlans();
+  renderLibrary();
+})();
+</script>
+</body>
+</html>
