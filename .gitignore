@@ -13,3 +13,10 @@ Thumbs.db
 node_modules/
 npm-debug.log
 yarn-error.log
+
+# Certbot
+certbot-etc/
+certbot-var/
+
+# Scripts
+init-letsencrypt.sh
