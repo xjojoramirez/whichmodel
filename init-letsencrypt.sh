@@ -1,6 +1,6 @@
 #!/bin/bash
-DOMAIN="__DOMAIN__"
-EMAIL="__EMAIL__"
+DOMAIN="nakout.com"
+EMAIL="jojoryan.ramirez@gmail.com"
 staging=0  # Set to 1 for testing with Let's Encrypt staging
 
 echo "==> Starting nginx for certbot challenge..."
