@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(node -e \"const fs=require('fs');const html=fs.readFileSync('model-test-bench.html','utf8');const m=html.match(/<script>([\\s\\S]*?)<\\/script>/);new Function(m[1]);console.log('JS syntax OK')\")",
+      "Shell(node -e \"const fs=require('fs');const s=fs.readFileSync('model-test-bench.html','utf8');console.log('bytes:',s.length,'lines:',s.split(/\\r?\\n/).length)\")",
+      "Shell(node -e \"const fs=require('fs');const html=fs.readFileSync('model-test-bench.html','utf8');const m=html.match(/<script>([\\s\\S]*?)<\\/script>/);new Function(m[1]);console.log('JS syntax OK');console.log('cabinet refs:', (html.match(/cabinet/g)||[]).length);console.log('screen refs:', (html.match(/screen/g)||[]).length)\")",
+      "Shell(node -e \" const fs=require('fs'); const html=fs.readFileSync('model-test-bench.html','utf8'); const m=html.match(/<script>([\\s\\S]*?)<\\/script>/); const src=m[1]; // crude check: find RECS entries that are plain strings inside arrays const bad=[]; for (const line of src.split(/\\r?\\n/)) { const t=line.trim(); if (t.startsWith('{ model:') || t.startsWith('{model:')) continue; if (/^\\s*\\\"[^\\\"]*\\\"\\s*,?\\s*$/.test(t) && !t.includes('mode')) bad.push(t); } console.log('plain-string entries found:', bad.length); bad.slice(0,10).forEach(b=>console.log(' ',b)); \")",
+      "Shell(node -e \" const fs=require('fs'); const html=fs.readFileSync('model-test-bench.html','utf8'); const m=html.match(/<script>([\\s\\S]*?)<\\/script>/); const src=m[1]; const lines=src.split(/\\r?\\n/); let inRecs=false, depth=0, count=0, plain=0; for (const line of lines) { const t=line.trim(); if (t.includes('var RECS')) { inRecs=true; } if (inRecs && t.startsWith('};')) break; if (inRecs && /mode:\\s*\\\"(plan|execute|review|research)\\\"/.test(t)) count++; if (inRecs && /^\\\".*\\\"\\s*,?\\s*$/.test(t) && !t.includes('mode:') && !t.includes('id:') && !t.includes('name:') && !t.includes('price:') && !t.includes('note:')) plain++; } console.log('mode-tagged entries:', count); console.log('plain strings in RECS block:', plain); \")",
+      "Shell(node \"C:\\Users\\SD\\AppData\\Local\\Temp\\commandcode\\D--dev-commandcode-whichmodel\\2900d557-ae11-4b5a-b635-6cc47dca458c\\scratchpad\\check-recs.js\")",
+      "Shell(node \"C:\\Users\\SD\\AppData\\Local\\Temp\\commandcode\\D--dev-commandcode-whichmodel\\2900d557-ae11-4b5a-b635-6cc47dca458c\\scratchpad\\smoke.js\")",
+      "Shell(del:*)",
+      "Shell(node \"C:\\Users\\SD\\AppData\\Local\\Temp\\commandcode\\D--dev-commandcode-whichmodel\\2900d557-ae11-4b5a-b635-6cc47dca458c\\scratchpad\\check-recs2.js\")",
+      "Shell(node \"C:\\Users\\SD\\AppData\\Local\\Temp\\commandcode\\D--dev-commandcode-whichmodel\\2900d557-ae11-4b5a-b635-6cc47dca458c\\scratchpad\\smoke2.js\")",
+      "Shell(node \"C:\\Users\\SD\\AppData\\Local\\Temp\\commandcode\\D--dev-commandcode-whichmodel\\2900d557-ae11-4b5a-b635-6cc47dca458c\\scratchpad\\smoke3.js\")",
+      "Shell(copy:*)",
+      "Shell(gh:*)",
+      "Shell(git:*)",
+      "Shell(cd /d D:\\dev\\commandcode\\whichmodel && git add .gitignore README.md nakout.html && git -c user.name=xjojoramirez -c user.email=xjojoramirez@users.noreply.github.com commit -F - <<'EOF' Initial commit: Nakout model picker Single-file static app that recommends AI models by provider + plan + tier. Co-authored-by: CommandCodeBot <noreply@commandcode.ai> EOF)",
+      "Shell(gh api -X POST repos/xjojoramirez/whichmodel/pages --input=- <<'EOF' {\"source\":{\"branch\":\"main\",\"path\":\"/\"}} EOF)",
+      "Shell(docker:*)",
+      "Shell(netstat:*)",
+      "Shell(findstr:*)",
+      "Shell(curl -s -o /dev/null -w \"HTTP %{http_code}\" http://localhost:8080)",
+      "Shell(curl -s http://localhost:8080)",
+      "Shell(ssh root@194.233.83.175 \"docker system df && echo '---' && docker ps -a && echo '---' && docker images && echo '---' && docker volume ls\")"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
